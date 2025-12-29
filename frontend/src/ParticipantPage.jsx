@@ -18,7 +18,7 @@ const ParticipantPage = () => {
   const joinRound = () => {
     if (!name.trim()) return;
 
-    const wsUrl = import.meta.env.VITE_BACKEND_HOST.replace('http', 'ws') + '/ws/admin';
+    const wsUrl = import.meta.env.VITE_BACKEND_HOST.replace('http', 'ws') + '/ws/participant';
 
     const socket = new WebSocket(wsUrl);
     setWs(socket);
