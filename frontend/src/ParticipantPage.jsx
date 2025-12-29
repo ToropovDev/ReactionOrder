@@ -3,15 +3,14 @@ import React, { useState, useEffect } from 'react';
 
 const ParticipantPage = () => {
   const [name, setName] = useState('');
-  const [status, setStatus] = useState('input'); // 'input', 'waiting', 'clicked'
+  const [status, setStatus] = useState('input');
   const [ws, setWs] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     return () => {
-      if (ws) {
-        ws.close();
-      }
+      if (ws) ws.close();
     };
   }, [ws]);
 
@@ -37,20 +36,20 @@ const ParticipantPage = () => {
       if (data.event === 'round_reset') {
         setStatus('waiting');
       }
+      if (data.event === 'score_update') {
+        setScore(data.score);
+      }
     };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error (participant):', error);
-      alert('Не удалось подключиться к серверу. Запущен ли бэкенд на порту 8080?');
+    socket.onerror = () => {
+      alert('Ошибка подключения к серверу');
       setStatus('input');
       setIsConnected(false);
     };
 
     socket.onclose = () => {
       setIsConnected(false);
-      if (status !== 'input') {
-        setStatus('input');
-      }
+      if (status !== 'input') setStatus('input');
     };
   };
 
@@ -64,13 +63,8 @@ const ParticipantPage = () => {
     return (
       <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'sans-serif' }}>
         <h2>✅ Засчитано!</h2>
+        <h3>Ваш счёт: 💰 {score}</h3>
         <p>Ждите начала нового раунда...</p>
-        <button
-          onClick={() => setStatus('waiting')}
-          style={{ marginTop: '20px', fontSize: '14px' }}
-        >
-          Вернуться к кнопке
-        </button>
       </div>
     );
   }
@@ -78,10 +72,13 @@ const ParticipantPage = () => {
   if (status === 'waiting') {
     return (
       <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'sans-serif' }}>
+        {isConnected && (
+          <div style={{ marginBottom: '15px', fontSize: '16px', color: '#1976d2' }}>
+            💰 Ваш счёт: {score}
+          </div>
+        )}
         {!isConnected && (
-          <p style={{ color: 'red', marginBottom: '10px' }}>
-            Соединение потеряно. Перезагрузите страницу.
-          </p>
+          <p style={{ color: 'red', marginBottom: '10px' }}>Соединение потеряно</p>
         )}
         <h2>Готовы?</h2>
         <button
@@ -134,9 +131,6 @@ const ParticipantPage = () => {
       >
         Войти в раунд
       </button>
-      <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
-        После входа появится большая кнопка. Нажмите её, когда будете готовы!
-      </p>
     </div>
   );
 };

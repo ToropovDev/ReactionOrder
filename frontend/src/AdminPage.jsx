@@ -13,9 +13,9 @@ const AdminPage = () => {
     const socket = new WebSocket(wsUrl);
     setWs(socket);
 
-    socket.onopen = () => {
-      setIsConnected(true);
-    };
+    socket.onopen = () => setIsConnected(true);
+    socket.onerror = () => setIsConnected(false);
+    socket.onclose = () => setIsConnected(false);
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -24,18 +24,7 @@ const AdminPage = () => {
       }
     };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error (admin):', error);
-      setIsConnected(false);
-    };
-
-    socket.onclose = () => {
-      setIsConnected(false);
-    };
-
-    return () => {
-      socket.close();
-    };
+    return () => socket.close();
   }, []);
 
   const clearRound = () => {
@@ -44,24 +33,23 @@ const AdminPage = () => {
     }
   };
 
+  const awardPoints = (clientId, points) => {
+    if (ws && isConnected) {
+      ws.send(JSON.stringify({
+        action: 'award_points',
+        client_id: clientId,
+        points: points
+      }));
+    }
+  };
+
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', fontFamily: 'sans-serif' }}>
       <h1>Админка: Порядок нажатий</h1>
 
       {!isConnected && (
-        <p style={{ color: 'red' }}>
-          ❌ Нет подключения к серверу. Убедитесь, что бэкенд запущен на порту 8080.
-        </p>
+        <p style={{ color: 'red' }}>❌ Нет подключения к серверу</p>
       )}
-
-      <p>
-        <strong>Ссылка для участников:</strong>{' '}
-        <code>
-          {import.meta.env.DEV
-            ? `http://localhost:3000/join`
-            : `${window.location.origin}/join`}
-        </code>
-      </p>
 
       <h2>Текущий раунд ({participants.length} участников):</h2>
       {participants.length === 0 ? (
@@ -69,9 +57,33 @@ const AdminPage = () => {
       ) : (
         <ol>
           {participants.map((p, i) => (
-            <li key={i}>
+            <li key={p.client_id || i} style={{ marginBottom: '15px' }}>
               <strong>{p.name}</strong> —{' '}
               {new Date(p.timestamp * 1000).toISOString().slice(11, 23)}
+              <br />
+              <span style={{ color: '#d32f2f', fontWeight: 'bold' }}>
+                💰 Счёт: {p.score}
+              </span>
+              <div style={{ marginTop: '5px' }}>
+                {[200, 400, 600, 800].map(points => (
+                  <button
+                    key={points}
+                    onClick={() => awardPoints(p.client_id, points)}
+                    style={{
+                      marginLeft: '5px',
+                      padding: '2px 6px',
+                      fontSize: '12px',
+                      backgroundColor: '#1976d2',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '3px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    +{points}
+                  </button>
+                ))}
+              </div>
             </li>
           ))}
         </ol>
