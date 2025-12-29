@@ -9,7 +9,7 @@ const AdminPage = () => {
   useEffect(() => {
     // Определяем URL WebSocket в зависимости от режима
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const backendHost = import.meta.env.DEV ? 'localhost:8080' : window.location.host;
+    const backendHost = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:8080';
     const wsUrl = `${protocol}://${backendHost}/ws/admin`;
 
     const socket = new WebSocket(wsUrl);
