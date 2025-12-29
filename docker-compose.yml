@@ -5,13 +5,13 @@ services:
   backend:
     build: ./backend
     ports:
-      - "8000:8000"
+      - "8080:8080"
     restart: unless-stopped
 
   frontend:
     build: ./frontend
     ports:
       - "3000:3000"
-    environment:
-      - VITE_BACKEND_HOST=http://ваш-внешний-ip:8000  # ← сюда ваш IP!
+    volumes:
+      - ./frontend/.env:/app/.env  # монтируем .env в контейнер
     restart: unless-stopped
