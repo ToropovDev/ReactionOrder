@@ -19,7 +19,7 @@ const ParticipantPage = () => {
     if (!name.trim()) return;
 
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-const backendHost = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:8080';
+const backendHost = 'http://backend:8080';
     const wsUrl = `${protocol}://${backendHost}/ws/participant`;
 
     const socket = new WebSocket(wsUrl);
